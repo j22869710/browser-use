@@ -2,7 +2,11 @@
 FROM python:3.11-slim
 
 # 安裝系統必要套件
-RUN apt-get update && apt-get install -y curl npm nodejs
+RUN apt-get update && apt-get install -y curl gnupg
+
+# 安裝 Node.js 官方版（比如 node 20）
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
 
 # 建立工作目錄
 WORKDIR /app
