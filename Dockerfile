@@ -1,22 +1,27 @@
-# 使用 Node.js 20 環境
-FROM node:20-bullseye
+# 使用 Python + Node 的基底映像
+FROM python:3.11-slim
 
-# 安裝 Python 與 Playwright 所需套件
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    npm install -g npm@latest
+# 安裝系統必要套件
+RUN apt-get update && apt-get install -y curl npm nodejs
 
 # 建立工作目錄
 WORKDIR /app
 
-# 複製專案檔案
+# 複製整個專案
 COPY . .
 
-# 安裝依賴（包含 Playwright browser binaries）
-RUN npm install && npx playwright install --with-deps
+# 安裝 Python 依賴
+RUN pip install -r requirements.txt
 
-# 開放 port（可自訂）
+# 安裝 Node.js 依賴並 build 前端頁面
+WORKDIR /app/browser_use/server/pages
+RUN npm install && npm run build
+
+# 回到主目錄
+WORKDIR /app
+
+# 開放 Port
 EXPOSE 3000
 
-# 啟動 browser-use（可改為 dev）
-CMD ["npm", "run", "start"]
+# 啟動 FastAPI 伺服器
+CMD ["uvicorn", "browser_use.server.main:app", "--host", "0.0.0.0", "--port", "3000"]
